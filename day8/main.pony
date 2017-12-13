@@ -3,6 +3,9 @@ use "debug"
 use "itertools"
 use "files"
 
+primitive _Part1
+primitive _Part2
+
 class _Registers
   let _registers: Map[String, I64] = Map[String, I64]
   var _highest: I64 = I64.min_value()
@@ -80,10 +83,22 @@ primitive _RunCommand
 
 actor Main
   new create(env: Env) =>
-    let filename = try
-      env.args(1)?
+    let part = try
+      match env.args(1)?
+      | "part1" => _Part1
+      | "part2" => _Part2
+      else
+        error
+      end
     else
-      _exit(env, "first argument must be input filename", 1)
+      _exit(env, "first argument must be either part1 or part2", 1)
+      return
+    end
+
+    let filename = try
+      env.args(2)?
+    else
+      _exit(env, "second argument must be input filename", 1)
       return
     end
 
@@ -102,7 +117,12 @@ actor Main
       _exit(env, "there was a problem reading the file", 2)
     end
 
-    env.out.print(registers.max().string() + " " + registers.highest().string())
+    match part
+    | _Part1 =>
+      env.out.print(registers.max().string())
+    | _Part2 =>
+      env.out.print(registers.highest().string())
+    end
 
   fun _exit(env: Env, message: String, exitcode: I32) =>
     env.exitcode(exitcode)
