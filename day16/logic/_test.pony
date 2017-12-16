@@ -14,8 +14,8 @@ class iso _TestExample1 is UnitTest
   fun apply(h: TestHelper) ? =>
     let dl = DanceLine(5)
     ExecuteCommand(dl, "s1")?
-    h.assert_array_eq[U8](dl.array(), "eabcd".array())
+    h.assert_eq[String](dl.string(), "eabcd")
     ExecuteCommand(dl, "x3/4")?
-    h.assert_array_eq[U8](dl.array(), "eabdc".array())
+    h.assert_eq[String](dl.string(), "eabdc")
     ExecuteCommand(dl, "pe/b")?
-    h.assert_array_eq[U8](dl.array(), "baedc".array())
+    h.assert_eq[String](dl.string(), "baedc")

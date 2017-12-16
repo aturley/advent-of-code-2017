@@ -120,24 +120,25 @@ actor DanceLineActor
 class DanceLine
   var _line: Array[U8]
   var _temp_line: Array[U8]
+  var _start: USize
+  let _num_members: USize
 
   new create(num_members: USize) =>
     _line = Array[U8](num_members)
     _temp_line = Array[U8](num_members)
+    _start = 0
+    _num_members = num_members
 
     for i in Range(0, num_members) do
       _line.push('a' + i.u8())
     end
 
   fun ref spin(x: USize) =>
-    _line.copy_to(_temp_line, 0, x,  _line.size() - x)
-    _line.copy_to(_temp_line, _line.size() - x, 0,  x)
-    let t = _line
-    _line = _temp_line
-    _temp_line = t
+    _start = ((_num_members - x) + _start) % _num_members
 
   fun ref exchange(pos_a: USize, pos_b: USize) ? =>
-    _line.swap_elements(pos_a, pos_b)?
+    _line.swap_elements((pos_a + _start) % _num_members,
+      (pos_b + _start) % _num_members)?
 
   fun ref partner(a: U8, b: U8) ? =>
     var pos_a: USize = _line.size()
@@ -160,15 +161,11 @@ class DanceLine
     let size = _line.size()
     let copy = recover trn Array[U8](size) end
 
-    for v in _line.values() do
-      copy.push(v)
+    for i in Range(0, _num_members) do
+      try copy.push(_line((i + _start) % _num_members)?) end
     end
 
     consume copy
 
   fun string(): String =>
-    let s = recover trn String end
-    for c in _line.values() do
-      s.push(c)
-    end
-    consume s
+    String.from_array(array())
