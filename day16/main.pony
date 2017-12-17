@@ -40,10 +40,9 @@ actor Main
       end
     | _Part2 =>
       try
-        let dla = DanceLineActor(16)
         let compiled_commands = CompileCommands(commands)?
-        Debug("compiled_commands.size() = " + compiled_commands.size().string())
-        dla.run_commands(compiled_commands, 1_000_000_000, env.out)
+        let dla = DanceLineActor(16)
+        dla.run_commands(compiled_commands, 1_000_000_000, env.out, true)
       else
         _exit(env, "error running commands", 2)
         return
