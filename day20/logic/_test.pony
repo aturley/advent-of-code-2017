@@ -9,6 +9,7 @@ actor Main is TestList
     test(_TestParticle)
     test(_TestParticleParser)
     test(_TestFindLongTermClosest)
+    test(_TestFindAliveAfterCollisions)
 
 class iso _TestParticle is UnitTest
   fun name(): String => "Particle"
@@ -62,3 +63,14 @@ class iso _TestFindLongTermClosest is UnitTest
     let closest = FindLongTermClosest([p0; p1])?
 
     h.assert_eq[USize](closest, 0)
+
+class iso _TestFindAliveAfterCollisions is UnitTest
+  fun name(): String => "FindAliveAfterCollisions"
+
+  fun apply(h: TestHelper) ? =>
+    let p0 = ParticleFromString("p=<-6,0,0>, v=<3,0,0>, a=<0,0,0>")?
+    let p1 = ParticleFromString("p=<-4,0,0>, v=<2,0,0>, a=<0,0,0>")?
+    let p2 = ParticleFromString("p=<-2,0,0>, v=<1,0,0>, a=<0,0,0>")?
+    let p3 = ParticleFromString("p=<3,0,0>, v=<-1,0,0>, a=<0,0,0>")?
+
+    h.assert_eq[USize](1, FindAliveAfterCollisions([p0; p1; p2; p3])?)

@@ -52,10 +52,19 @@ actor Main
 
         env.out.print(FindLongTermClosest(particles)?.string())
       else
-        _exit(env, "error tracing the map", 1)
+        _exit(env, "error finding long term closest", 1)
         return
       end
     | _Part2 =>
-        _exit(env, "not implemented yet", 1)
+      try
+        let particles = Array[Particle]
+        for (i, p) in file_contents.split("\n").pairs() do
+          particles.push(ParticleFromString(p)?)
+        end
+
+        env.out.print(FindAliveAfterCollisions(particles)?.string())
+      else
+        _exit(env, "error finding particles left", 1)
         return
+      end
     end

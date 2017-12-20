@@ -23,9 +23,6 @@ primitive ParticleFromString
     end
 
     let acc = particle.get_acc()
-    if ((acc._1.abs() + acc._2.abs()) + acc._3.abs()) < 2 then
-      Debug(s)
-    end
 
     particle
 
@@ -155,6 +152,60 @@ primitive FindLongTermClosest
     (((p.get_acc()._1 > 0) != (p.get_pos()._1 > 0)) or
      ((p.get_acc()._2 > 0) != (p.get_pos()._2 > 0))) or
     ((p.get_acc()._3 > 0) != (p.get_pos()._3 > 0))
+
+primitive FindAliveAfterCollisions
+  fun apply(particles: Array[Particle]): USize ? =>
+    var max_steps_to_stable: U64 = 0
+
+    for p in particles.values() do
+      max_steps_to_stable =
+        _steps_to_stable_direction(p).max(max_steps_to_stable)
+    end
+
+    let alive = Array[Bool].init(true, particles.size())
+
+    // meh, just let thing stablize and then run it for a bit longer
+    for _ in Range(0, max_steps_to_stable.usize() + 1000) do
+      let proximity_map = Map[I64, Array[USize]]
+      for (i, p) in particles.pairs() do
+        if (alive(i)?) then
+          p.update()
+          let pos = p.get_pos()
+          proximity_map.upsert(pos._1 + pos._2 + pos._3, [i], {(ps, n): Array[USize] => ps.>append(n)})?
+        end
+      end
+
+      for ps in proximity_map.values() do
+        for (i, p_idx) in ps.pairs() do
+          for j in Range(i + 1, ps.size()) do
+            let p_a = particles(p_idx)?
+            let p_b = particles(ps(j)?)?
+
+            let pos_a = p_a.get_pos()
+            let pos_b = p_b.get_pos()
+            if ((pos_a._1 == pos_b._1) and (pos_a._2 == pos_b._2)) and (pos_a._3 == pos_b._3) then
+              alive(p_idx)? = false
+              alive(ps(j)?)? = false
+            end
+          end
+        end
+      end
+    end
+
+    var sum_alive: USize = 0
+
+    for a in alive.values() do
+      if a then
+        sum_alive = sum_alive + 1
+      end
+    end
+
+    sum_alive
+
+  fun _steps_to_stable_direction(p: Particle): U64 =>
+    (p.get_vel()._1 / p.get_acc()._1).min(0).min(
+      ((p.get_vel()._2 / p.get_acc()._2).min(0))).min(
+      ((p.get_vel()._3 / p.get_acc()._3).min(0))).abs()
 
 class Particle
   var _pos: _Triplet = (0, 0, 0)
